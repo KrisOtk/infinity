@@ -1,0 +1,41 @@
+inputs:
+  - Stdin:
+      codec: plain #json需要输入json
+      hostname: true # if add hostname to event; default false
+      type: stdin
+
+filters:
+  - Add:
+      fields:
+        index_name: 'logkit-render' # 也可以写freemarker表达式
+
+  - Date:
+      src: '@timestamp'
+      formats:
+        - "YYYY-MM-dd'T'HH:mm:ss.SSS'Z'"
+        - "YYYY-MM-dd'T'HH:mm:ss.SSS"
+        - "YYYY-MM-dd HH:mm:ss.SSS"
+        - "YYYY-MM-dd HH:mm:ss"
+      target: '@timestamp'
+      timezone: "Asia/Shanghai"
+
+  - Rename:
+      fields:
+        index_name: name
+
+outputs:
+  - Stdout: {}
+  - RestElasticsearch:
+      cluster: fat_7_4_1_cluster
+      hosts:
+        - 10.9.47.11:41613
+      index: 'test-index-%{+YYYY.MM.dd}'
+      username: elastic
+      password: l3F9Hx65q15i4LM4GsKj5B3B
+      #      password: password
+      bulk_actions: 10 #default 20000
+      bulk_size: 1 # default 15 MB
+      flush_interval: 5 # default 10 seconds
+      #          concurrent_requests: 1 # default 0, concurrent_requests设置成大于0的数, 意思着多线程处理, 以我应用的经验,还有是一定OOM风险的,强烈建议设置为0
+      timezone: "Asia/Shanghai" # defaut UTC 时区. 只用于生成索引名字的字符串格式化
+      sniff: false #default true

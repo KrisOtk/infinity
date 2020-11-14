@@ -1,0 +1,39 @@
+inputs:
+  - Stdin:
+      codec: json
+      needHostname: true # if add hostname to event; default false
+      type: stdin1
+
+filters:
+  - Date:
+      src: '@timestamp'
+      formats:
+        - "YYYY-MM-dd'T'HH:mm:ss.SSS'Z'"
+        - "YYYY-MM-dd HH:mm:ss.SSS"
+        - "YYYY-MM-dd HH:mm:ss"
+      target: '@timestamp'
+      timezone: "Asia/Shanghai"
+#- Add:
+#    fields:
+#        appname: 'crm-datatools-report'
+#- Add:
+#    fields:
+#        datetime: '2019-03-19 09:40:18.999'
+#- Grok:
+#    match:
+#    - '^(?<logtime>\S+) (?<user>\w+) (-|(?<level>\w+)) %{DATA:msg}$'
+#    remove_fields: ['message']
+#    tag_on_failure: '' # do not add tags; deafult "grokfail"     addfield2: 'field2content'
+#    #- Date:
+#    #src: logtime
+#    #formats:
+#    #- UNIX
+
+
+outputs:
+  - Stdout:
+      format: string
+  - Kafka:
+      producer_settings:
+        bootstrap.servers: "10.9.68.143:9092"
+      topic: test-topic

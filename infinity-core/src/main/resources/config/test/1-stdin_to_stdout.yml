@@ -1,0 +1,34 @@
+inputs:
+  - Stdin:
+      codec: plain
+#      codec: json #需要输入json
+      needHostname: true # if add hostname to event; default false
+      type: test-type
+
+filters:
+  - Date:
+      src: '@timestamp'
+      formats:
+        - "YYYY-MM-dd'T'HH:mm:ss.SSS'Z'"
+        - "YYYY-MM-dd'T'HH:mm:ss.SSS"
+        - "YYYY-MM-dd HH:mm:ss.SSS"
+        - "YYYY-MM-dd HH:mm:ss"
+      target: '@timestamp'
+      timezone: "Asia/Shanghai"
+
+outputs:
+  - Stdout: {}
+#  - Stdout:
+#      format: "[user][name]" #input-demo {"user":{"name":"kris"}}
+
+# 配置是否启用metrics监控
+#查看日志 com.zwq.infinity.plugin.metrics.kafka.KafkaMeterRegistry.writeDocument
+#metrics:
+#  - MicroKafkaMetric:
+#      topic: test-kafka
+#      host: 10.10.10.10:9092
+#      enabled: true
+#      step: 20
+#      tags:
+#        - kafkaTopic
+#        - infinity-metric

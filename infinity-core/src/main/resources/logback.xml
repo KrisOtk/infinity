@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration debug="false">
+    <!--定义日志文件的存储地址,读取环境变量log.file,默认值`./logs/infinity_run`-->
+    <property name="logFile" value="${log.file:-./logs/infinity_run}"/>
+    <!-- 格式化日志输出： %d表示日期， %thread表示线程名， %-5level：日志级别从左显示5个字符宽度,左对齐(-5) %logger{50}: 输出日志记录的logger名通常为类名,长度为50  %msg：日志消息，%n是换行符 -->
+    <property name="logPattern" value="%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{50} - %msg%n"/>
+
+    <!-- 控制台输出 -->
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <pattern>${logPattern}</pattern>
+        </encoder>
+    </appender>
+
+    <!--文件输出-->
+    <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${logFile}.log</file>
+        <append>true</append>
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <!-- daily && size rollover,%i不能丢,批次号的概念;最近30天或者到达500MB字段打包压缩  -->
+            <fileNamePattern>${logFile}.%d{yyyy-MM-dd}.%i.log.zip</fileNamePattern>
+            <maxHistory>2</maxHistory>
+            <maxFileSize>500MB</maxFileSize>
+        </rollingPolicy>
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <pattern>${logPattern}</pattern>
+        </encoder>
+    </appender>
+
+
+    <!-- 输出INFO及以上级别的日志 -->
+    <root level="INFO">
+        <!-- 让自定义的appender生效 -->
+        <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="FILE"/>
+    </root>
+</configuration>
