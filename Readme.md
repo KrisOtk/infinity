@@ -15,6 +15,7 @@ java -DuseConfigMap=true -DconfigMapName=xx -jar infinity-core-0.0.1-SNAPSHOT.ja
 
 ```shell
 # 启动参数
+-Dconfig.file=./infinity-core/src/main/resources/config/test/1-stdin_to_stdout.yml
 -Dconfig.file=/path/to/config/put2kafka.yml
 ```
 
