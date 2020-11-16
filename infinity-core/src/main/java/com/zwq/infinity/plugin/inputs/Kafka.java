@@ -158,29 +158,33 @@ public class Kafka extends BaseInput {
 
         @Override
         public void run() {
+            boolean paused = false;
+            Set<TopicPartition> assignment = new HashSet<>();
             while (true) {
                 try {
-                    Set<TopicPartition> assignment = new HashSet<>();
-                    while (blockingQueue.remainingCapacity() < maxQueueSize * 0.15) {
+                    if (blockingQueue.remainingCapacity() < maxQueueSize * 0.15 && !paused) {
                         assignment = consumer.assignment();
                         consumer.pause(assignment);
+                        paused = true;
+                    } else {
+                        paused = false;
+                        consumer.resume(assignment);
+                        assignment = new HashSet<>();
                     }
-                    if (CollectionUtils.isNotEmpty(assignment)) {
-                        consumer.resume(consumer.assignment());
+                    if (!paused) {
+                        ConsumerRecords<String, String> records = consumer.poll(Duration.ofMillis(5_000));
+                        saveMetric(this.metrics, records.count());
+                        records.forEach(consumerRecord -> {
+                            try {
+                                String value = consumerRecord.value();
+                                blockingQueue.put(value);
+                            } catch (InterruptedException e) {
+                                log.error("put to blockQueue error:{}", ExceptionUtils.getStackTrace(e));
+                            }
+                        });
                     }
-                    ConsumerRecords<String, String> records = consumer.poll(Duration.ofMillis(5_000));
-                    saveMetric(this.metrics, records.count());
-                    records.forEach(consumerRecord -> {
-                        try {
-                            String value = consumerRecord.value();
-                            blockingQueue.put(value);
-                        } catch (InterruptedException e) {
-                            log.info("put to blockQueue error:{}", ExceptionUtils.getStackTrace(e));
-                        }
-                    });
-
                 } catch (Throwable e) {
-                    log.info("poll from kafka error：{}", ExceptionUtils.getStackTrace(e));
+                    log.error("poll from kafka error：{}", ExceptionUtils.getStackTrace(e));
                 }
             }
         }
